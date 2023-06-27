@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: sr-svc
+  namespace: sr-ns
+  labels:
+    env: poc
+spec:
+  type: NodePort
+  selector:
+    env: poc
+  ports:  
+    - port: 5000
+      targetPort: 80
+      nodePort: 32000
+
+
+
+

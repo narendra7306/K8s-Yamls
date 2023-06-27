@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sr-deploy
+  namespace: sr-ns
+  labels:
+    env: poc
+  annotations:
+    project: sr-k8s-project  
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      env: poc
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0
+  minReadySeconds: 5
+  revisionHistoryLimit: 5
+  template:
+    metadata:
+      labels:
+        env: poc
+    spec:
+      terminationGracePeriodSeconds: 30
+      imagePullSecrets:
+        - name: docker-secret
+      nodeSelector:
+        env: poc
+      volumes:
+      - name: mrkp-volume
+        persistentVolumeClaim:
+          claimName: sr-pvc
+      - name: sr-volume
+        configMap:
+          name: airflow-configmap
+          items:
+            - key: airflow.cfg
+              path: airflow.cfg
+            - key: deploy.sh
+              path: deploy.sh
+      initContainers:
+      - name: busybox-c1
+        image: busybox
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: mrkp-volume
+          mountPath: /mrkp
+        command: ["/bin/sh"]
+        args: ["-c", "echo 'devops code is running' > /mrkp/index.html; sleep 10"]
+      containers:
+      - name: nginx-c1
+        image: narendra7306/nginx:1.0
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 80
+        command: ["/bin/sh"]
+        args: ["-c", "while true; do sleep 600; done;"]
+        env:
+        - name: SQL_ALCHEMY_CONN
+          valueFrom:
+            secretKeyRef:
+              name: airflow-secrets
+              key: sql_alchemy_conn
+        resources:
+          limits:
+            memory: "1Gi"
+            cpu: "2000m"
+          requests:
+            memory: "500Mi"
+            cpu: "1000m"
+        volumeMounts:
+        - name: sr-volume
+          mountPath: /srdata
+
+
+
+

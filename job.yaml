@@ -1,0 +1,31 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sr-job
+  namespace: sr-ns
+  labels:
+    env: poc
+spec:
+  backoffLimit: 2
+  completions: 6
+  parallelism: 2
+  template:
+    spec:
+      imagePullSecrets:
+        - name: docker-secret
+      nodeSelector:
+        env: poc
+      containers:
+      - name: nginx-c1
+        image: narendra7306/nginx:1.0
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 80
+        command:
+        - /bin/sh
+        - -c
+        - |
+          chmod +x /srdata/deploy.sh
+          echo "execute deploy.sh now"
+      restartPolicy: Never
+

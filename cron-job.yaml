@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: sr-cron
+  namespace: sr-ns
+  labels:
+    env: poc
+spec:
+  schedule: "*/2 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          imagePullSecrets:
+            - name: docker-secret
+          nodeSelector:
+            env: poc
+          containers:
+          - name: nginx-c1
+            image: narendra7306/nginx:1.0
+            imagePullPolicy: Always
+            ports:
+              - containerPort: 80
+            command:
+            - /bin/sh
+            - -c
+            - |
+              chmod +x /srdata/deploy.sh
+              echo "execute deploy.sh now"
+          restartPolicy: Never
