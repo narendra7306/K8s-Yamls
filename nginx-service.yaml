@@ -10,9 +10,9 @@ spec:
   selector:
     env: poc
   ports:  
-    - port: 5000
-      targetPort: 80
-      nodePort: 32000
+    - port: 5000   # port = service port
+      targetPort: 80  # container Port = target Port 
+      nodePort: 32000  # we can assign any port in between the range of 30000-32766
 
 
 
